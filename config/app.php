@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Gemini AI Model
+    |--------------------------------------------------------------------------
+    |
+    | The Gemini model to use for AI-powered features like recommendations
+    | and feedback generation.
+    |
+    */
+
+    'gemini_model' => env('GEMINI_MODEL', 'gemini-1.5-flash'),
+
 ];
