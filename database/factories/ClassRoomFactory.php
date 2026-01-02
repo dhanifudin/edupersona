@@ -16,8 +16,16 @@ class ClassRoomFactory extends Factory
      */
     public function definition(): array
     {
+        $gradeLevel = fake()->randomElement(['X', 'XI', 'XII']);
+        $major = fake()->randomElement(['IPA', 'IPS', 'Bahasa']);
+        $classNumber = fake()->unique()->numberBetween(1, 100);
+
         return [
-            //
+            'name' => $gradeLevel.' '.$major.' '.$classNumber,
+            'grade_level' => $gradeLevel,
+            'major' => $major,
+            'academic_year' => '2024/2025',
+            'is_active' => true,
         ];
     }
 }

@@ -45,6 +45,16 @@ class Subject extends Model
         return $this->hasMany(LearningMaterial::class);
     }
 
+    public function learningMaterials(): HasMany
+    {
+        return $this->hasMany(LearningMaterial::class);
+    }
+
+    public function classSubjects(): HasMany
+    {
+        return $this->hasMany(ClassSubject::class);
+    }
+
     public function studentProgress(): HasMany
     {
         return $this->hasMany(StudentProgress::class);

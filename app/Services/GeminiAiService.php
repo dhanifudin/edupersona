@@ -13,7 +13,7 @@ class GeminiAiService
 
     public function __construct()
     {
-        $this->textModel = config('app.gemini_model', 'gemini-1.5-flash');
+        $this->textModel = config('app.gemini_model') ?? 'gemini-1.5-flash';
     }
 
     /**

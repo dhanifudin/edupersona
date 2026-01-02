@@ -6,10 +6,16 @@ use App\Models\AiRecommendation;
 use App\Models\LearningMaterial;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class RecommendationEngine
 {
+    /**
+     * Cache duration in hours.
+     */
+    private const CACHE_HOURS = 6;
+
     public function __construct(
         private GeminiAiService $geminiService
     ) {}
@@ -233,11 +239,67 @@ class RecommendationEngine
      */
     public function refreshForStudent(User $user, ?int $subjectId = null): Collection
     {
+        // Clear cache
+        $this->clearUserCache($user);
+
         // Mark old unviewed recommendations as viewed
         AiRecommendation::where('user_id', $user->id)
             ->where('is_viewed', false)
             ->update(['is_viewed' => true, 'viewed_at' => now()]);
 
         return $this->generateForStudent($user, $subjectId);
+    }
+
+    /**
+     * Get cached recommendations for a student.
+     *
+     * @return Collection<int, AiRecommendation>
+     */
+    public function getCachedRecommendations(User $user, ?int $subjectId = null): Collection
+    {
+        $cacheKey = $this->getCacheKey($user, $subjectId);
+
+        return Cache::remember($cacheKey, now()->addHours(self::CACHE_HOURS), function () use ($user, $subjectId) {
+            // First try to get existing unviewed recommendations
+            $existing = AiRecommendation::where('user_id', $user->id)
+                ->where('is_viewed', false)
+                ->with('material.subject')
+                ->orderByDesc('relevance_score')
+                ->get();
+
+            if ($existing->isNotEmpty()) {
+                return $existing;
+            }
+
+            // Generate new recommendations if none exist
+            return $this->generateForStudent($user, $subjectId);
+        });
+    }
+
+    /**
+     * Clear recommendation cache for a user.
+     */
+    public function clearUserCache(User $user, ?int $subjectId = null): void
+    {
+        $cacheKey = $this->getCacheKey($user, $subjectId);
+        Cache::forget($cacheKey);
+
+        // Also clear general cache if subject-specific was cleared
+        if ($subjectId !== null) {
+            Cache::forget($this->getCacheKey($user, null));
+        }
+    }
+
+    /**
+     * Get cache key for user recommendations.
+     */
+    private function getCacheKey(User $user, ?int $subjectId = null): string
+    {
+        $key = "recommendations:{$user->id}";
+        if ($subjectId !== null) {
+            $key .= ":subject:{$subjectId}";
+        }
+
+        return $key;
     }
 }
