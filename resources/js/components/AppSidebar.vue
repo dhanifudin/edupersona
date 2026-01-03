@@ -13,17 +13,66 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, Brain, ClipboardList, Folder, GraduationCap, LayoutGrid, MessageSquare } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
+import { index as studentDashboard } from '@/actions/App/Http/Controllers/Student/DashboardController';
+import { index as questionnaireIndex } from '@/actions/App/Http/Controllers/Student/QuestionnaireController';
+import { show as learningProfileShow } from '@/actions/App/Http/Controllers/Student/LearningProfileController';
+import { index as materialsIndex } from '@/actions/App/Http/Controllers/Student/MaterialController';
+import { index as feedbackIndex } from '@/actions/App/Http/Controllers/Student/FeedbackController';
+import { index as subjectsIndex } from '@/actions/App/Http/Controllers/Student/SubjectEnrollmentController';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
+
+const mainNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+    ];
+
+    if (user.value?.role === 'student') {
+        return [
+            {
+                title: 'Dashboard',
+                href: studentDashboard().url,
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Mata Pelajaran',
+                href: subjectsIndex().url,
+                icon: GraduationCap,
+            },
+            {
+                title: 'Materi',
+                href: materialsIndex().url,
+                icon: BookOpen,
+            },
+            {
+                title: 'Kuesioner',
+                href: questionnaireIndex().url,
+                icon: ClipboardList,
+            },
+            {
+                title: 'Profil Belajar',
+                href: learningProfileShow().url,
+                icon: Brain,
+            },
+            {
+                title: 'Feedback AI',
+                href: feedbackIndex().url,
+                icon: MessageSquare,
+            },
+        ];
+    }
+
+    return items;
+});
 
 const footerNavItems: NavItem[] = [
     {

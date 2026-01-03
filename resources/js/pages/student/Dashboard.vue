@@ -1,14 +1,41 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
-import { type BreadcrumbItem, type ClassRoom, type LearningStyleProfile, type LearningActivity, type AiRecommendation } from '@/types';
+import { type BreadcrumbItem, type ClassRoom, type LearningStyleProfile, type LearningActivity, type AiRecommendation, type Subject } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { index as questionnaireIndex } from '@/actions/App/Http/Controllers/Student/QuestionnaireController';
 import { show as learningProfileShow } from '@/actions/App/Http/Controllers/Student/LearningProfileController';
-import { BookOpen, Brain, ClipboardList, Clock, Sparkles, TrendingUp } from 'lucide-vue-next';
+import { BookOpen, Brain, ClipboardList, Clock, Plus, Sparkles, TrendingUp } from 'lucide-vue-next';
+import SubjectCard from '@/components/student/SubjectCard.vue';
+import EnrollmentModal from '@/components/student/EnrollmentModal.vue';
+
+interface SubjectProgress {
+    completedTopics: number;
+    totalTopics: number;
+    percentage: number;
+}
+
+interface Enrollment {
+    id: number;
+    subject: Subject;
+    enrollment_type: 'assigned' | 'elective';
+    enrolled_at: string;
+    status: string;
+    progress: SubjectProgress;
+}
+
+interface AvailableSubject {
+    id: number;
+    name: string;
+    code: string;
+    description?: string;
+    materials_count: number;
+    topic_count: number;
+}
 
 interface Props {
     hasCompletedQuestionnaire: boolean;
@@ -16,11 +43,18 @@ interface Props {
     currentClass?: ClassRoom;
     recentActivities?: LearningActivity[];
     recommendations?: AiRecommendation[];
+    enrollments?: Enrollment[];
+    availableSubjects?: AvailableSubject[];
+    stats?: {
+        completedTopics: number;
+        totalTopics: number;
+    };
 }
 
 const props = defineProps<Props>();
 const page = usePage();
 const user = page.props.auth.user;
+const showEnrollmentModal = ref(false);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -171,18 +205,63 @@ const formatDuration = (seconds: number): string => {
                     </CardContent>
                 </Card>
 
-                <!-- Progress Placeholder -->
+                <!-- Progress -->
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between pb-2">
                         <CardTitle class="text-sm font-medium">Kemajuan</CardTitle>
                         <TrendingUp class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">-</div>
+                        <div class="text-2xl font-bold">
+                            {{ stats?.completedTopics || 0 }}/{{ stats?.totalTopics || 0 }}
+                        </div>
                         <p class="text-xs text-muted-foreground">
                             topik selesai dipelajari
                         </p>
                     </CardContent>
+                </Card>
+            </div>
+
+            <!-- Subjects Section -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold">Mata Pelajaran Saya</h2>
+                    <Button
+                        v-if="availableSubjects && availableSubjects.length > 0"
+                        variant="outline"
+                        size="sm"
+                        @click="showEnrollmentModal = true"
+                    >
+                        <Plus class="mr-2 h-4 w-4" />
+                        Tambah Pilihan
+                    </Button>
+                </div>
+
+                <div v-if="enrollments && enrollments.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <SubjectCard
+                        v-for="enrollment in enrollments"
+                        :key="enrollment.id"
+                        :subject="enrollment.subject"
+                        :enrollment-type="enrollment.enrollment_type"
+                        :progress="enrollment.progress"
+                    />
+                </div>
+
+                <Card v-else class="p-8">
+                    <div class="flex flex-col items-center justify-center text-center">
+                        <BookOpen class="h-12 w-12 text-muted-foreground/50" />
+                        <p class="mt-4 text-muted-foreground">
+                            Belum ada mata pelajaran yang terdaftar.
+                        </p>
+                        <Button
+                            v-if="availableSubjects && availableSubjects.length > 0"
+                            class="mt-4"
+                            @click="showEnrollmentModal = true"
+                        >
+                            <Plus class="mr-2 h-4 w-4" />
+                            Daftar Mata Pelajaran
+                        </Button>
+                    </div>
                 </Card>
             </div>
 
@@ -277,5 +356,11 @@ const formatDuration = (seconds: number): string => {
                 </Card>
             </div>
         </div>
+
+        <!-- Enrollment Modal -->
+        <EnrollmentModal
+            v-model:open="showEnrollmentModal"
+            :available-subjects="availableSubjects || []"
+        />
     </AppLayout>
 </template>

@@ -13,6 +13,8 @@ use App\Http\Controllers\Student\ProfileController;
 use App\Http\Controllers\Student\ProgressController;
 use App\Http\Controllers\Student\QuestionnaireController;
 use App\Http\Controllers\Student\RecommendationController;
+use App\Http\Controllers\Student\SubjectEnrollmentController;
+use App\Http\Controllers\Student\SubjectLearningController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\MaterialController as TeacherMaterialController;
 use App\Http\Controllers\Teacher\StudentController as TeacherStudentController;
@@ -56,6 +58,19 @@ Route::middleware(['auth', 'verified', 'role:student'])->prefix('student')->name
     Route::post('/feedback/generate', [FeedbackController::class, 'generate'])->name('feedback.generate');
 
     Route::get('/progress', [ProgressController::class, 'index'])->name('progress.index');
+
+    // Subject Enrollment
+    Route::get('/subjects', [SubjectEnrollmentController::class, 'index'])->name('subjects.index');
+    Route::get('/subjects/available', [SubjectEnrollmentController::class, 'available'])->name('subjects.available');
+    Route::post('/subjects/{subject}/enroll', [SubjectEnrollmentController::class, 'enroll'])->name('subjects.enroll');
+    Route::delete('/subjects/{subject}/unenroll', [SubjectEnrollmentController::class, 'unenroll'])->name('subjects.unenroll');
+
+    // Subject Learning
+    Route::get('/subjects/{subject}/learn', [SubjectLearningController::class, 'show'])->name('subjects.learn');
+    Route::get('/subjects/{subject}/topics', [SubjectLearningController::class, 'topics'])->name('subjects.topics');
+    Route::get('/subjects/{subject}/topics/{topic}', [SubjectLearningController::class, 'topic'])->name('subjects.topic');
+    Route::post('/subjects/{subject}/topics/{topic}/start', [SubjectLearningController::class, 'startTopic'])->name('subjects.topic.start');
+    Route::post('/subjects/{subject}/topics/{topic}/complete', [SubjectLearningController::class, 'completeTopic'])->name('subjects.topic.complete');
 });
 
 // Teacher Routes

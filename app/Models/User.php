@@ -118,6 +118,18 @@ class User extends Authenticatable
         return $this->hasMany(StudentProgress::class);
     }
 
+    public function subjectEnrollments(): HasMany
+    {
+        return $this->hasMany(StudentSubjectEnrollment::class);
+    }
+
+    public function enrolledSubjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Subject::class, 'student_subject_enrollments')
+            ->withPivot('enrollment_type', 'enrolled_at', 'status')
+            ->withTimestamps();
+    }
+
     // Teacher relationships
     public function teacherSubjects(): BelongsToMany
     {
