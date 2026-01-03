@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Student\DashboardController;
+use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\FeedbackController;
 use App\Http\Controllers\Student\LearningProfileController;
 use App\Http\Controllers\Student\MaterialController;
@@ -28,16 +28,24 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+// Unified Dashboard - redirects based on role
 Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
+    $user = auth()->user();
+
+    return match ($user?->role) {
+        'student' => redirect()->route('dashboard.student'),
+        'teacher' => redirect()->route('dashboard.teacher'),
+        'admin' => redirect()->route('dashboard.admin'),
+        default => Inertia::render('Dashboard'),
+    };
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Student Routes
-Route::middleware(['auth', 'verified', 'role:student'])->prefix('student')->name('student.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
+    Route::get('/dashboard/student', [StudentDashboardController::class, 'index'])->name('dashboard.student');
 
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/my-profile', [ProfileController::class, 'show'])->name('student.profile.show');
+    Route::put('/my-profile', [ProfileController::class, 'update'])->name('student.profile.update');
 
     Route::get('/questionnaire', [QuestionnaireController::class, 'index'])->name('questionnaire.index');
     Route::post('/questionnaire', [QuestionnaireController::class, 'store'])->name('questionnaire.store');
@@ -74,18 +82,18 @@ Route::middleware(['auth', 'verified', 'role:student'])->prefix('student')->name
 });
 
 // Teacher Routes
-Route::middleware(['auth', 'verified', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
-    Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth', 'verified', 'role:teacher'])->group(function () {
+    Route::get('/dashboard/teacher', [TeacherDashboardController::class, 'index'])->name('dashboard.teacher');
 
     // Materials CRUD
-    Route::get('/materials', [TeacherMaterialController::class, 'index'])->name('materials.index');
-    Route::get('/materials/create', [TeacherMaterialController::class, 'create'])->name('materials.create');
-    Route::post('/materials', [TeacherMaterialController::class, 'store'])->name('materials.store');
-    Route::get('/materials/{material}', [TeacherMaterialController::class, 'show'])->name('materials.show');
-    Route::get('/materials/{material}/edit', [TeacherMaterialController::class, 'edit'])->name('materials.edit');
-    Route::put('/materials/{material}', [TeacherMaterialController::class, 'update'])->name('materials.update');
-    Route::delete('/materials/{material}', [TeacherMaterialController::class, 'destroy'])->name('materials.destroy');
-    Route::patch('/materials/{material}/toggle-active', [TeacherMaterialController::class, 'toggleActive'])->name('materials.toggle-active');
+    Route::get('/manage/materials', [TeacherMaterialController::class, 'index'])->name('manage.materials.index');
+    Route::get('/manage/materials/create', [TeacherMaterialController::class, 'create'])->name('manage.materials.create');
+    Route::post('/manage/materials', [TeacherMaterialController::class, 'store'])->name('manage.materials.store');
+    Route::get('/manage/materials/{material}', [TeacherMaterialController::class, 'show'])->name('manage.materials.show');
+    Route::get('/manage/materials/{material}/edit', [TeacherMaterialController::class, 'edit'])->name('manage.materials.edit');
+    Route::put('/manage/materials/{material}', [TeacherMaterialController::class, 'update'])->name('manage.materials.update');
+    Route::delete('/manage/materials/{material}', [TeacherMaterialController::class, 'destroy'])->name('manage.materials.destroy');
+    Route::patch('/manage/materials/{material}/toggle-active', [TeacherMaterialController::class, 'toggleActive'])->name('manage.materials.toggle-active');
 
     // Students
     Route::get('/students', [TeacherStudentController::class, 'index'])->name('students.index');
@@ -93,8 +101,8 @@ Route::middleware(['auth', 'verified', 'role:teacher'])->prefix('teacher')->name
 });
 
 // Admin Routes
-Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
+    Route::get('/dashboard/admin', [AdminDashboardController::class, 'index'])->name('dashboard.admin');
 
     // Users CRUD
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
@@ -116,13 +124,13 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::patch('/classes/{class}/toggle-active', [AdminClassController::class, 'toggleActive'])->name('classes.toggle-active');
 
     // Subjects CRUD
-    Route::get('/subjects', [AdminSubjectController::class, 'index'])->name('subjects.index');
-    Route::get('/subjects/create', [AdminSubjectController::class, 'create'])->name('subjects.create');
-    Route::post('/subjects', [AdminSubjectController::class, 'store'])->name('subjects.store');
-    Route::get('/subjects/{subject}', [AdminSubjectController::class, 'show'])->name('subjects.show');
-    Route::get('/subjects/{subject}/edit', [AdminSubjectController::class, 'edit'])->name('subjects.edit');
-    Route::put('/subjects/{subject}', [AdminSubjectController::class, 'update'])->name('subjects.update');
-    Route::delete('/subjects/{subject}', [AdminSubjectController::class, 'destroy'])->name('subjects.destroy');
+    Route::get('/manage/subjects', [AdminSubjectController::class, 'index'])->name('manage.subjects.index');
+    Route::get('/manage/subjects/create', [AdminSubjectController::class, 'create'])->name('manage.subjects.create');
+    Route::post('/manage/subjects', [AdminSubjectController::class, 'store'])->name('manage.subjects.store');
+    Route::get('/manage/subjects/{subject}', [AdminSubjectController::class, 'show'])->name('manage.subjects.show');
+    Route::get('/manage/subjects/{subject}/edit', [AdminSubjectController::class, 'edit'])->name('manage.subjects.edit');
+    Route::put('/manage/subjects/{subject}', [AdminSubjectController::class, 'update'])->name('manage.subjects.update');
+    Route::delete('/manage/subjects/{subject}', [AdminSubjectController::class, 'destroy'])->name('manage.subjects.destroy');
 
     // Reports
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');

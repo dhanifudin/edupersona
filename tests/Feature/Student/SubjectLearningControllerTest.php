@@ -10,7 +10,7 @@ use App\Models\User;
 test('guests are redirected to login from subject learning page', function () {
     $subject = Subject::factory()->create();
 
-    $response = $this->get("/student/subjects/{$subject->id}/learn");
+    $response = $this->get("/subjects/{$subject->id}/learn");
 
     $response->assertRedirect('/login');
 });
@@ -19,7 +19,7 @@ test('non-students cannot access subject learning page', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
     $subject = Subject::factory()->create();
 
-    $response = $this->actingAs($teacher)->get("/student/subjects/{$subject->id}/learn");
+    $response = $this->actingAs($teacher)->get("/subjects/{$subject->id}/learn");
 
     $response->assertForbidden();
 });
@@ -28,7 +28,7 @@ test('students cannot access learning page for unenrolled subject', function () 
     $student = User::factory()->create(['role' => 'student']);
     $subject = Subject::factory()->create();
 
-    $response = $this->actingAs($student)->get("/student/subjects/{$subject->id}/learn");
+    $response = $this->actingAs($student)->get("/subjects/{$subject->id}/learn");
 
     $response->assertForbidden();
 });
@@ -49,7 +49,7 @@ test('students can access learning page for enrolled subject', function () {
         'is_active' => true,
     ]);
 
-    $response = $this->actingAs($student)->get("/student/subjects/{$subject->id}/learn");
+    $response = $this->actingAs($student)->get("/subjects/{$subject->id}/learn");
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -96,7 +96,7 @@ test('students can view topic list with progress', function () {
         'status' => 'completed',
     ]);
 
-    $response = $this->actingAs($student)->get("/student/subjects/{$subject->id}/topics");
+    $response = $this->actingAs($student)->get("/subjects/{$subject->id}/topics");
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -121,7 +121,7 @@ test('students can view topic detail with materials', function () {
         'is_active' => true,
     ]);
 
-    $response = $this->actingAs($student)->get("/student/subjects/{$subject->id}/topics/Introduction");
+    $response = $this->actingAs($student)->get("/subjects/{$subject->id}/topics/Introduction");
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -148,7 +148,7 @@ test('students can start a topic', function () {
         'status' => 'active',
     ]);
 
-    $response = $this->actingAs($student)->post("/student/subjects/{$subject->id}/topics/Introduction/start");
+    $response = $this->actingAs($student)->post("/subjects/{$subject->id}/topics/Introduction/start");
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
@@ -186,7 +186,7 @@ test('starting topic updates existing progress', function () {
         'status' => 'not_started',
     ]);
 
-    $response = $this->actingAs($student)->post("/student/subjects/{$subject->id}/topics/Introduction/start");
+    $response = $this->actingAs($student)->post("/subjects/{$subject->id}/topics/Introduction/start");
 
     $response->assertRedirect();
 
@@ -222,7 +222,7 @@ test('students can complete a topic', function () {
         'status' => 'in_progress',
     ]);
 
-    $response = $this->actingAs($student)->post("/student/subjects/{$subject->id}/topics/Introduction/complete");
+    $response = $this->actingAs($student)->post("/subjects/{$subject->id}/topics/Introduction/complete");
 
     $response->assertRedirect();
     $response->assertSessionHas('success');

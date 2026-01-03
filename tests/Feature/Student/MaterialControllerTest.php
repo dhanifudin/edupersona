@@ -11,7 +11,7 @@ test('students can view materials index page', function () {
     $student = User::factory()->create(['role' => 'student']);
     LearningMaterial::factory()->count(3)->create();
 
-    $response = $this->actingAs($student)->get('/student/materials');
+    $response = $this->actingAs($student)->get('/materials');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -28,7 +28,7 @@ test('students can filter materials by subject', function () {
     $material = LearningMaterial::factory()->create(['subject_id' => $subject->id]);
     LearningMaterial::factory()->create(); // Different subject
 
-    $response = $this->actingAs($student)->get('/student/materials?subject='.$subject->id);
+    $response = $this->actingAs($student)->get('/materials?subject='.$subject->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -42,7 +42,7 @@ test('students can filter materials by type', function () {
     LearningMaterial::factory()->video()->create();
     LearningMaterial::factory()->document()->create();
 
-    $response = $this->actingAs($student)->get('/student/materials?type=video');
+    $response = $this->actingAs($student)->get('/materials?type=video');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -56,7 +56,7 @@ test('students can filter materials by learning style', function () {
     LearningMaterial::factory()->visual()->create();
     LearningMaterial::factory()->auditory()->create();
 
-    $response = $this->actingAs($student)->get('/student/materials?style=visual');
+    $response = $this->actingAs($student)->get('/materials?style=visual');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -79,7 +79,7 @@ test('students with learning profile see materials matching their dominant style
     LearningMaterial::factory()->visual()->create();
     LearningMaterial::factory()->auditory()->create();
 
-    $response = $this->actingAs($student)->get('/student/materials');
+    $response = $this->actingAs($student)->get('/materials');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -92,7 +92,7 @@ test('students can view a single material', function () {
     $student = User::factory()->create(['role' => 'student']);
     $material = LearningMaterial::factory()->create();
 
-    $response = $this->actingAs($student)->get('/student/materials/'.$material->id);
+    $response = $this->actingAs($student)->get('/materials/'.$material->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -107,7 +107,7 @@ test('viewing a material creates a learning activity', function () {
     $student = User::factory()->create(['role' => 'student']);
     $material = LearningMaterial::factory()->create();
 
-    $this->actingAs($student)->get('/student/materials/'.$material->id);
+    $this->actingAs($student)->get('/materials/'.$material->id);
 
     $this->assertDatabaseHas('learning_activities', [
         'user_id' => $student->id,
@@ -127,7 +127,7 @@ test('viewing a material marks recommendation as viewed', function () {
         'is_viewed' => false,
     ]);
 
-    $this->actingAs($student)->get('/student/materials/'.$material->id);
+    $this->actingAs($student)->get('/materials/'.$material->id);
 
     $this->assertDatabaseHas('ai_recommendations', [
         'user_id' => $student->id,
@@ -147,7 +147,7 @@ test('students can update learning activity duration', function () {
     ]);
 
     $response = $this->actingAs($student)
-        ->patchJson('/student/activities/'.$activity->id, [
+        ->patchJson('/activities/'.$activity->id, [
             'duration_seconds' => 120,
         ]);
 
@@ -169,7 +169,7 @@ test('students can mark learning activity as completed', function () {
     ]);
 
     $response = $this->actingAs($student)
-        ->patchJson('/student/activities/'.$activity->id, [
+        ->patchJson('/activities/'.$activity->id, [
             'duration_seconds' => 300,
             'completed' => true,
         ]);
@@ -180,7 +180,7 @@ test('students can mark learning activity as completed', function () {
 });
 
 test('guests cannot access materials', function () {
-    $response = $this->get('/student/materials');
+    $response = $this->get('/materials');
 
     $response->assertRedirect('/login');
 });
@@ -188,7 +188,7 @@ test('guests cannot access materials', function () {
 test('non-students cannot access student materials', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->get('/student/materials');
+    $response = $this->actingAs($teacher)->get('/materials');
 
     $response->assertForbidden();
 });
@@ -199,7 +199,7 @@ test('related materials are shown on material page', function () {
     $material = LearningMaterial::factory()->create(['subject_id' => $subject->id]);
     LearningMaterial::factory()->count(3)->create(['subject_id' => $subject->id]);
 
-    $response = $this->actingAs($student)->get('/student/materials/'.$material->id);
+    $response = $this->actingAs($student)->get('/materials/'.$material->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -213,7 +213,7 @@ test('only active materials are shown', function () {
     LearningMaterial::factory()->create(['is_active' => true]);
     LearningMaterial::factory()->inactive()->create();
 
-    $response = $this->actingAs($student)->get('/student/materials');
+    $response = $this->actingAs($student)->get('/materials');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page

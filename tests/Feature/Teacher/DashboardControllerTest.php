@@ -10,7 +10,7 @@ use App\Models\User;
 test('teachers can view dashboard', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->get('/teacher/dashboard');
+    $response = $this->actingAs($teacher)->get('/dashboard/teacher');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -40,7 +40,7 @@ test('dashboard shows correct stats', function () {
 
     LearningMaterial::factory()->count(3)->create(['teacher_id' => $teacher->id]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/dashboard');
+    $response = $this->actingAs($teacher)->get('/dashboard/teacher');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -54,7 +54,7 @@ test('dashboard shows recent materials', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
     LearningMaterial::factory()->count(5)->create(['teacher_id' => $teacher->id]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/dashboard');
+    $response = $this->actingAs($teacher)->get('/dashboard/teacher');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -89,7 +89,7 @@ test('dashboard shows learning style distribution for homeroom students', functi
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/dashboard');
+    $response = $this->actingAs($teacher)->get('/dashboard/teacher');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -100,7 +100,7 @@ test('dashboard shows learning style distribution for homeroom students', functi
 });
 
 test('guests cannot access teacher dashboard', function () {
-    $response = $this->get('/teacher/dashboard');
+    $response = $this->get('/dashboard/teacher');
 
     $response->assertRedirect('/login');
 });
@@ -108,7 +108,7 @@ test('guests cannot access teacher dashboard', function () {
 test('students cannot access teacher dashboard', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/teacher/dashboard');
+    $response = $this->actingAs($student)->get('/dashboard/teacher');
 
     $response->assertForbidden();
 });

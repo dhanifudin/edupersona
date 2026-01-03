@@ -112,7 +112,7 @@ class FeedbackController extends Controller
             'generated_at' => now(),
         ]);
 
-        return redirect()->route('student.feedback.show', $feedback)
+        return redirect()->route('feedback.show', $feedback)
             ->with('success', 'Umpan balik berhasil dibuat!');
     }
 

@@ -12,7 +12,7 @@ beforeEach(function () {
 test('students can view questionnaire page', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/questionnaire');
+    $response = $this->actingAs($student)->get('/questionnaire');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -32,9 +32,9 @@ test('students with completed questionnaire are redirected to learning profile',
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($student)->get('/student/questionnaire');
+    $response = $this->actingAs($student)->get('/questionnaire');
 
-    $response->assertRedirect('/student/learning-profile');
+    $response->assertRedirect('/learning-profile');
 });
 
 test('students can submit questionnaire responses', function () {
@@ -47,9 +47,9 @@ test('students can submit questionnaire responses', function () {
     ])->toArray();
 
     $response = $this->actingAs($student)
-        ->post('/student/questionnaire', ['responses' => $responses]);
+        ->post('/questionnaire', ['responses' => $responses]);
 
-    $response->assertRedirect('/student/learning-profile');
+    $response->assertRedirect('/learning-profile');
     $this->assertDatabaseHas('learning_style_profiles', [
         'user_id' => $student->id,
     ]);
@@ -65,7 +65,7 @@ test('questionnaire requires all questions to be answered', function () {
     ];
 
     $response = $this->actingAs($student)
-        ->post('/student/questionnaire', ['responses' => $responses]);
+        ->post('/questionnaire', ['responses' => $responses]);
 
     $response->assertSessionHasErrors('responses');
 });

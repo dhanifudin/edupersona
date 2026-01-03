@@ -9,7 +9,7 @@ use App\Models\User;
 test('admins can view reports index page', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->get('/admin/reports');
+    $response = $this->actingAs($admin)->get('/reports');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -19,7 +19,7 @@ test('admins can view reports index page', function () {
 });
 
 test('guests cannot access reports page', function () {
-    $response = $this->get('/admin/reports');
+    $response = $this->get('/reports');
 
     $response->assertRedirect('/login');
 });
@@ -27,7 +27,7 @@ test('guests cannot access reports page', function () {
 test('students cannot access reports page', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/admin/reports');
+    $response = $this->actingAs($student)->get('/reports');
 
     $response->assertForbidden();
 });
@@ -35,7 +35,7 @@ test('students cannot access reports page', function () {
 test('teachers cannot access reports page', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->get('/admin/reports');
+    $response = $this->actingAs($teacher)->get('/reports');
 
     $response->assertForbidden();
 });
@@ -54,7 +54,7 @@ test('admins can generate learning styles pdf report', function () {
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'learning_styles',
         'format' => 'pdf',
     ]);
@@ -76,7 +76,7 @@ test('admins can generate learning styles csv report', function () {
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'learning_styles',
         'format' => 'csv',
     ]);
@@ -95,7 +95,7 @@ test('admins can generate student progress pdf report', function () {
         'material_id' => $material->id,
     ]);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'student_progress',
         'format' => 'pdf',
     ]);
@@ -107,7 +107,7 @@ test('admins can generate student progress pdf report', function () {
 test('admins can generate student progress csv report', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'student_progress',
         'format' => 'csv',
     ]);
@@ -121,7 +121,7 @@ test('admins can generate material usage pdf report', function () {
 
     $material = LearningMaterial::factory()->create();
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'material_usage',
         'format' => 'pdf',
     ]);
@@ -133,7 +133,7 @@ test('admins can generate material usage pdf report', function () {
 test('admins can generate material usage csv report', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'material_usage',
         'format' => 'csv',
     ]);
@@ -147,7 +147,7 @@ test('admins can generate class analytics pdf report', function () {
 
     ClassRoom::factory()->create(['is_active' => true]);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'class_analytics',
         'format' => 'pdf',
     ]);
@@ -159,7 +159,7 @@ test('admins can generate class analytics pdf report', function () {
 test('admins can generate class analytics csv report', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'class_analytics',
         'format' => 'csv',
     ]);
@@ -171,7 +171,7 @@ test('admins can generate class analytics csv report', function () {
 test('report generation validates type parameter', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'invalid_type',
         'format' => 'pdf',
     ]);
@@ -182,7 +182,7 @@ test('report generation validates type parameter', function () {
 test('report generation validates format parameter', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'learning_styles',
         'format' => 'docx',
     ]);
@@ -193,7 +193,7 @@ test('report generation validates format parameter', function () {
 test('report generation accepts date range filters', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'student_progress',
         'format' => 'csv',
         'date_from' => '2024-01-01',
@@ -206,7 +206,7 @@ test('report generation accepts date range filters', function () {
 test('report generation validates date_to is after date_from', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/reports/generate', [
+    $response = $this->actingAs($admin)->post('/reports/generate', [
         'type' => 'student_progress',
         'format' => 'csv',
         'date_from' => '2024-12-31',
@@ -217,7 +217,7 @@ test('report generation validates date_to is after date_from', function () {
 });
 
 test('guests cannot generate reports', function () {
-    $response = $this->post('/admin/reports/generate', [
+    $response = $this->post('/reports/generate', [
         'type' => 'learning_styles',
         'format' => 'pdf',
     ]);
@@ -228,7 +228,7 @@ test('guests cannot generate reports', function () {
 test('students cannot generate reports', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->post('/admin/reports/generate', [
+    $response = $this->actingAs($student)->post('/reports/generate', [
         'type' => 'learning_styles',
         'format' => 'pdf',
     ]);

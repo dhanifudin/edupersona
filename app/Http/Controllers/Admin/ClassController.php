@@ -105,7 +105,7 @@ class ClassController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        return redirect()->route('admin.classes.index')
+        return redirect()->route('classes.index')
             ->with('success', 'Kelas berhasil ditambahkan!');
     }
 
@@ -183,7 +183,7 @@ class ClassController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        return redirect()->route('admin.classes.index')
+        return redirect()->route('classes.index')
             ->with('success', 'Kelas berhasil diperbarui!');
     }
 
@@ -196,7 +196,7 @@ class ClassController extends Controller
 
         $class->delete();
 
-        return redirect()->route('admin.classes.index')
+        return redirect()->route('classes.index')
             ->with('success', 'Kelas berhasil dihapus!');
     }
 

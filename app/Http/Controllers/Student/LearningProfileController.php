@@ -22,7 +22,7 @@ class LearningProfileController extends Controller
 
         // Redirect to questionnaire if not completed
         if (! $learningProfile) {
-            return redirect()->route('student.questionnaire.index')
+            return redirect()->route('questionnaire.index')
                 ->with('info', 'Silakan isi kuesioner terlebih dahulu untuk melihat profil gaya belajarmu.');
         }
 

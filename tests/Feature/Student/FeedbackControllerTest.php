@@ -8,7 +8,7 @@ use App\Services\GeminiAiService;
 test('students can view feedback index page', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/feedback');
+    $response = $this->actingAs($student)->get('/feedback');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -22,7 +22,7 @@ test('students can see their feedback in the list', function () {
     $student = User::factory()->create(['role' => 'student']);
     AiFeedback::factory()->count(3)->create(['user_id' => $student->id]);
 
-    $response = $this->actingAs($student)->get('/student/feedback');
+    $response = $this->actingAs($student)->get('/feedback');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -35,7 +35,7 @@ test('students can view a single feedback', function () {
     $student = User::factory()->create(['role' => 'student']);
     $feedback = AiFeedback::factory()->create(['user_id' => $student->id]);
 
-    $response = $this->actingAs($student)->get('/student/feedback/'.$feedback->id);
+    $response = $this->actingAs($student)->get('/feedback/'.$feedback->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -51,7 +51,7 @@ test('viewing feedback marks it as read', function () {
         'is_read' => false,
     ]);
 
-    $this->actingAs($student)->get('/student/feedback/'.$feedback->id);
+    $this->actingAs($student)->get('/feedback/'.$feedback->id);
 
     $feedback->refresh();
     expect($feedback->is_read)->toBeTrue();
@@ -62,7 +62,7 @@ test('students cannot view other users feedback', function () {
     $otherStudent = User::factory()->create(['role' => 'student']);
     $feedback = AiFeedback::factory()->create(['user_id' => $otherStudent->id]);
 
-    $response = $this->actingAs($student)->get('/student/feedback/'.$feedback->id);
+    $response = $this->actingAs($student)->get('/feedback/'.$feedback->id);
 
     $response->assertForbidden();
 });
@@ -83,7 +83,7 @@ test('students can generate feedback when they have a learning profile', functio
         $mock->shouldReceive('generateFeedback')->andReturn(null);
     });
 
-    $response = $this->actingAs($student)->post('/student/feedback/generate');
+    $response = $this->actingAs($student)->post('/feedback/generate');
 
     $response->assertRedirect();
     $this->assertDatabaseHas('ai_feedback', [
@@ -95,14 +95,14 @@ test('students can generate feedback when they have a learning profile', functio
 test('students cannot generate feedback without learning profile', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->post('/student/feedback/generate');
+    $response = $this->actingAs($student)->post('/feedback/generate');
 
     $response->assertRedirect();
     $response->assertSessionHas('error');
 });
 
 test('guests cannot access feedback', function () {
-    $response = $this->get('/student/feedback');
+    $response = $this->get('/feedback');
 
     $response->assertRedirect('/login');
 });
@@ -110,7 +110,7 @@ test('guests cannot access feedback', function () {
 test('non-students cannot access student feedback', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->get('/student/feedback');
+    $response = $this->actingAs($teacher)->get('/feedback');
 
     $response->assertForbidden();
 });
@@ -118,7 +118,7 @@ test('non-students cannot access student feedback', function () {
 test('feedback index shows hasLearningProfile false when no profile exists', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/feedback');
+    $response = $this->actingAs($student)->get('/feedback');
     $response->assertInertia(fn ($page) => $page
         ->where('hasLearningProfile', false)
     );
@@ -135,7 +135,7 @@ test('feedback index shows hasLearningProfile true when profile exists', functio
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($student)->get('/student/feedback');
+    $response = $this->actingAs($student)->get('/feedback');
     $response->assertInertia(fn ($page) => $page
         ->where('hasLearningProfile', true)
     );

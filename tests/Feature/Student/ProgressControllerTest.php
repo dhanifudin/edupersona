@@ -6,7 +6,7 @@ use App\Models\Subject;
 use App\Models\User;
 
 test('guests are redirected to login from progress page', function () {
-    $response = $this->get('/student/progress');
+    $response = $this->get('/progress');
 
     $response->assertRedirect('/login');
 });
@@ -14,7 +14,7 @@ test('guests are redirected to login from progress page', function () {
 test('non-students cannot access progress page', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->get('/student/progress');
+    $response = $this->actingAs($teacher)->get('/progress');
 
     $response->assertForbidden();
 });
@@ -22,7 +22,7 @@ test('non-students cannot access progress page', function () {
 test('students can access progress page', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -56,7 +56,7 @@ test('progress page shows correct stats for student with activities', function (
         'started_at' => now(),
     ]);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -69,7 +69,7 @@ test('progress page shows correct stats for student with activities', function (
 test('progress page shows empty stats for new student', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -84,7 +84,7 @@ test('progress page shows empty stats for new student', function () {
 test('progress page shows weekly activity data', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -104,7 +104,7 @@ test('progress page shows progress by subject', function () {
         'duration_seconds' => 600,
     ]);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -116,7 +116,7 @@ test('progress page shows progress by subject', function () {
 test('progress page shows streak data', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -135,7 +135,7 @@ test('progress page shows activity by type', function () {
         'material_id' => $material->id,
     ]);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -154,7 +154,7 @@ test('progress page shows recently completed activities', function () {
         'completed_at' => now(),
     ]);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -173,7 +173,7 @@ test('progress page limits recent completed to 10', function () {
         'completed_at' => now(),
     ]);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -194,7 +194,7 @@ test('student cannot see other students progress data', function () {
     ]);
 
     // Student1 should only see their own data (empty)
-    $response = $this->actingAs($student1)->get('/student/progress');
+    $response = $this->actingAs($student1)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -220,7 +220,7 @@ test('streak is calculated correctly for consecutive days', function () {
         'started_at' => now()->subDay(),
     ]);
 
-    $response = $this->actingAs($student)->get('/student/progress');
+    $response = $this->actingAs($student)->get('/progress');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page

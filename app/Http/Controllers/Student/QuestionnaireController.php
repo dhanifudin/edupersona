@@ -25,7 +25,7 @@ class QuestionnaireController extends Controller
 
         // Redirect if already completed
         if ($user->learningStyleProfile) {
-            return redirect()->route('student.learning-profile.show')
+            return redirect()->route('learning-profile.show')
                 ->with('info', 'Kamu sudah mengisi kuesioner. Lihat profil gaya belajarmu di sini.');
         }
 
@@ -44,7 +44,7 @@ class QuestionnaireController extends Controller
 
         // Prevent re-submission
         if ($user->learningStyleProfile) {
-            return redirect()->route('student.learning-profile.show')
+            return redirect()->route('learning-profile.show')
                 ->with('error', 'Kamu sudah mengisi kuesioner sebelumnya.');
         }
 
@@ -65,7 +65,7 @@ class QuestionnaireController extends Controller
             $this->analyzer->analyze($user);
         });
 
-        return redirect()->route('student.learning-profile.show')
+        return redirect()->route('learning-profile.show')
             ->with('success', 'Kuesioner berhasil disimpan! Lihat profil gaya belajarmu.');
     }
 }

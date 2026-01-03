@@ -10,7 +10,7 @@ test('admins can view subjects index', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     Subject::factory()->count(5)->create();
 
-    $response = $this->actingAs($admin)->get('/admin/subjects');
+    $response = $this->actingAs($admin)->get('/manage/subjects');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -25,7 +25,7 @@ test('subjects can be searched', function () {
     Subject::factory()->create(['name' => 'Matematika', 'code' => 'MTK']);
     Subject::factory()->create(['name' => 'Fisika', 'code' => 'FIS']);
 
-    $response = $this->actingAs($admin)->get('/admin/subjects?search=Mat');
+    $response = $this->actingAs($admin)->get('/manage/subjects?search=Mat');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -39,7 +39,7 @@ test('subjects can be searched by code', function () {
     Subject::factory()->create(['name' => 'Matematika', 'code' => 'MTK']);
     Subject::factory()->create(['name' => 'Fisika', 'code' => 'FIS']);
 
-    $response = $this->actingAs($admin)->get('/admin/subjects?search=MTK');
+    $response = $this->actingAs($admin)->get('/manage/subjects?search=MTK');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -51,7 +51,7 @@ test('subjects can be searched by code', function () {
 test('admins can view create subject form', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->get('/admin/subjects/create');
+    $response = $this->actingAs($admin)->get('/manage/subjects/create');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -62,13 +62,13 @@ test('admins can view create subject form', function () {
 test('admins can create a subject', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/subjects', [
+    $response = $this->actingAs($admin)->post('/manage/subjects', [
         'name' => 'Matematika',
         'code' => 'MTK',
         'description' => 'Mata pelajaran matematika',
     ]);
 
-    $response->assertRedirect('/admin/subjects');
+    $response->assertRedirect('/manage/subjects');
     $this->assertDatabaseHas('subjects', [
         'name' => 'Matematika',
         'code' => 'MTK',
@@ -78,12 +78,12 @@ test('admins can create a subject', function () {
 test('subject code is stored uppercase', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/subjects', [
+    $response = $this->actingAs($admin)->post('/manage/subjects', [
         'name' => 'Matematika',
         'code' => 'mtk',
     ]);
 
-    $response->assertRedirect('/admin/subjects');
+    $response->assertRedirect('/manage/subjects');
     $this->assertDatabaseHas('subjects', [
         'code' => 'MTK',
     ]);
@@ -93,7 +93,7 @@ test('subject creation prevents duplicate code', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     Subject::factory()->create(['code' => 'MTK']);
 
-    $response = $this->actingAs($admin)->post('/admin/subjects', [
+    $response = $this->actingAs($admin)->post('/manage/subjects', [
         'name' => 'Matematika 2',
         'code' => 'MTK',
     ]);
@@ -104,7 +104,7 @@ test('subject creation prevents duplicate code', function () {
 test('subject creation validates required fields', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->post('/admin/subjects', []);
+    $response = $this->actingAs($admin)->post('/manage/subjects', []);
 
     $response->assertSessionHasErrors(['name', 'code']);
 });
@@ -113,7 +113,7 @@ test('admins can view a subject', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     $subject = Subject::factory()->create();
 
-    $response = $this->actingAs($admin)->get("/admin/subjects/{$subject->id}");
+    $response = $this->actingAs($admin)->get("/manage/subjects/{$subject->id}");
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -129,7 +129,7 @@ test('admins can view edit subject form', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     $subject = Subject::factory()->create();
 
-    $response = $this->actingAs($admin)->get("/admin/subjects/{$subject->id}/edit");
+    $response = $this->actingAs($admin)->get("/manage/subjects/{$subject->id}/edit");
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -142,12 +142,12 @@ test('admins can update a subject', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     $subject = Subject::factory()->create(['name' => 'Matematika']);
 
-    $response = $this->actingAs($admin)->put("/admin/subjects/{$subject->id}", [
+    $response = $this->actingAs($admin)->put("/manage/subjects/{$subject->id}", [
         'name' => 'Matematika Wajib',
         'code' => $subject->code,
     ]);
 
-    $response->assertRedirect('/admin/subjects');
+    $response->assertRedirect('/manage/subjects');
     $this->assertDatabaseHas('subjects', [
         'id' => $subject->id,
         'name' => 'Matematika Wajib',
@@ -158,9 +158,9 @@ test('admins can delete a subject', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     $subject = Subject::factory()->create();
 
-    $response = $this->actingAs($admin)->delete("/admin/subjects/{$subject->id}");
+    $response = $this->actingAs($admin)->delete("/manage/subjects/{$subject->id}");
 
-    $response->assertRedirect('/admin/subjects');
+    $response->assertRedirect('/manage/subjects');
     $this->assertDatabaseMissing('subjects', ['id' => $subject->id]);
 });
 
@@ -169,7 +169,7 @@ test('admins cannot delete subject with materials', function () {
     $subject = Subject::factory()->create();
     LearningMaterial::factory()->create(['subject_id' => $subject->id]);
 
-    $response = $this->actingAs($admin)->delete("/admin/subjects/{$subject->id}");
+    $response = $this->actingAs($admin)->delete("/manage/subjects/{$subject->id}");
 
     $response->assertRedirect();
     $response->assertSessionHas('error');
@@ -188,7 +188,7 @@ test('admins cannot delete subject assigned to classes', function () {
         'teacher_id' => $teacher->id,
     ]);
 
-    $response = $this->actingAs($admin)->delete("/admin/subjects/{$subject->id}");
+    $response = $this->actingAs($admin)->delete("/manage/subjects/{$subject->id}");
 
     $response->assertRedirect();
     $response->assertSessionHas('error');
@@ -196,7 +196,7 @@ test('admins cannot delete subject assigned to classes', function () {
 });
 
 test('guests cannot access subject management', function () {
-    $response = $this->get('/admin/subjects');
+    $response = $this->get('/manage/subjects');
 
     $response->assertRedirect('/login');
 });
@@ -204,7 +204,7 @@ test('guests cannot access subject management', function () {
 test('students cannot access subject management', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/admin/subjects');
+    $response = $this->actingAs($student)->get('/manage/subjects');
 
     $response->assertForbidden();
 });
@@ -212,7 +212,7 @@ test('students cannot access subject management', function () {
 test('teachers cannot access subject management', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->get('/admin/subjects');
+    $response = $this->actingAs($teacher)->get('/manage/subjects');
 
     $response->assertForbidden();
 });

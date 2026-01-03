@@ -15,7 +15,7 @@ test('teachers can view students index', function () {
     $student = User::factory()->create(['role' => 'student']);
     $student->classes()->attach($class->id, ['enrolled_at' => now()]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students');
+    $response = $this->actingAs($teacher)->get('/students');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -37,7 +37,7 @@ test('teachers only see students in their classes', function () {
     $otherStudent = User::factory()->create(['role' => 'student']);
     $otherStudent->classes()->attach($otherClass->id, ['enrolled_at' => now()]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students');
+    $response = $this->actingAs($teacher)->get('/students');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -57,7 +57,7 @@ test('teachers can filter students by class', function () {
     $student2 = User::factory()->create(['role' => 'student']);
     $student2->classes()->attach($class2->id, ['enrolled_at' => now()]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students?class='.$class1->id);
+    $response = $this->actingAs($teacher)->get('/students?class='.$class1->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -93,7 +93,7 @@ test('teachers can filter students by learning style', function () {
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students?style=visual');
+    $response = $this->actingAs($teacher)->get('/students?style=visual');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -113,7 +113,7 @@ test('teachers can search students by name', function () {
     $student2 = User::factory()->create(['role' => 'student', 'name' => 'Jane Smith']);
     $student2->classes()->attach($class->id, ['enrolled_at' => now()]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students?search=John');
+    $response = $this->actingAs($teacher)->get('/students?search=John');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -129,7 +129,7 @@ test('teachers can view student details', function () {
     $student = User::factory()->create(['role' => 'student']);
     $student->classes()->attach($class->id, ['enrolled_at' => now()]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students/'.$student->id);
+    $response = $this->actingAs($teacher)->get('/students/'.$student->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -158,7 +158,7 @@ test('teachers can view student with learning profile', function () {
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students/'.$student->id);
+    $response = $this->actingAs($teacher)->get('/students/'.$student->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -182,7 +182,7 @@ test('teachers can view student activities', function () {
         'started_at' => now(),
     ]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students/'.$student->id);
+    $response = $this->actingAs($teacher)->get('/students/'.$student->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -199,7 +199,7 @@ test('teachers cannot view students outside their classes', function () {
     $student = User::factory()->create(['role' => 'student']);
     $student->classes()->attach($otherClass->id, ['enrolled_at' => now()]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students/'.$student->id);
+    $response = $this->actingAs($teacher)->get('/students/'.$student->id);
 
     $response->assertForbidden();
 });
@@ -218,13 +218,13 @@ test('teachers teaching a class can view students', function () {
     $student = User::factory()->create(['role' => 'student']);
     $student->classes()->attach($class->id, ['enrolled_at' => now()]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/students/'.$student->id);
+    $response = $this->actingAs($teacher)->get('/students/'.$student->id);
 
     $response->assertOk();
 });
 
 test('guests cannot access teacher students page', function () {
-    $response = $this->get('/teacher/students');
+    $response = $this->get('/students');
 
     $response->assertRedirect('/login');
 });
@@ -232,7 +232,7 @@ test('guests cannot access teacher students page', function () {
 test('students cannot access teacher students page', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/teacher/students');
+    $response = $this->actingAs($student)->get('/students');
 
     $response->assertForbidden();
 });

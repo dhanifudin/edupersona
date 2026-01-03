@@ -58,7 +58,7 @@ class SubjectController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        return redirect()->route('admin.subjects.index')
+        return redirect()->route('manage.subjects.index')
             ->with('success', 'Mata pelajaran berhasil ditambahkan!');
     }
 
@@ -119,7 +119,7 @@ class SubjectController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        return redirect()->route('admin.subjects.index')
+        return redirect()->route('manage.subjects.index')
             ->with('success', 'Mata pelajaran berhasil diperbarui!');
     }
 
@@ -137,7 +137,7 @@ class SubjectController extends Controller
 
         $subject->delete();
 
-        return redirect()->route('admin.subjects.index')
+        return redirect()->route('manage.subjects.index')
             ->with('success', 'Mata pelajaran berhasil dihapus!');
     }
 }

@@ -9,7 +9,7 @@ use App\Models\User;
 test('admins can view dashboard', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
-    $response = $this->actingAs($admin)->get('/admin/dashboard');
+    $response = $this->actingAs($admin)->get('/dashboard/admin');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -31,7 +31,7 @@ test('dashboard shows correct user stats', function () {
     User::factory()->count(5)->create(['role' => 'student']);
     User::factory()->count(3)->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($admin)->get('/admin/dashboard');
+    $response = $this->actingAs($admin)->get('/dashboard/admin');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -48,7 +48,7 @@ test('dashboard shows correct class and subject stats', function () {
     ClassRoom::factory()->count(2)->create(['is_active' => false]);
     Subject::factory()->count(5)->create();
 
-    $response = $this->actingAs($admin)->get('/admin/dashboard');
+    $response = $this->actingAs($admin)->get('/dashboard/admin');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -82,7 +82,7 @@ test('dashboard shows learning style distribution', function () {
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($admin)->get('/admin/dashboard');
+    $response = $this->actingAs($admin)->get('/dashboard/admin');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -96,7 +96,7 @@ test('dashboard shows recent users', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     User::factory()->count(15)->create();
 
-    $response = $this->actingAs($admin)->get('/admin/dashboard');
+    $response = $this->actingAs($admin)->get('/dashboard/admin');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -109,7 +109,7 @@ test('dashboard shows top materials', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     LearningMaterial::factory()->count(10)->create();
 
-    $response = $this->actingAs($admin)->get('/admin/dashboard');
+    $response = $this->actingAs($admin)->get('/dashboard/admin');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -119,7 +119,7 @@ test('dashboard shows top materials', function () {
 });
 
 test('guests cannot access admin dashboard', function () {
-    $response = $this->get('/admin/dashboard');
+    $response = $this->get('/dashboard/admin');
 
     $response->assertRedirect('/login');
 });
@@ -127,7 +127,7 @@ test('guests cannot access admin dashboard', function () {
 test('students cannot access admin dashboard', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/admin/dashboard');
+    $response = $this->actingAs($student)->get('/dashboard/admin');
 
     $response->assertForbidden();
 });
@@ -135,7 +135,7 @@ test('students cannot access admin dashboard', function () {
 test('teachers cannot access admin dashboard', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->get('/admin/dashboard');
+    $response = $this->actingAs($teacher)->get('/dashboard/admin');
 
     $response->assertForbidden();
 });

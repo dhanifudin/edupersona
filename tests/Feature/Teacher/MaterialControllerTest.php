@@ -12,7 +12,7 @@ test('teachers can view materials index', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
     LearningMaterial::factory()->count(3)->create(['teacher_id' => $teacher->id]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/materials');
+    $response = $this->actingAs($teacher)->get('/manage/materials');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -29,7 +29,7 @@ test('teachers only see their own materials', function () {
     LearningMaterial::factory()->count(2)->create(['teacher_id' => $teacher->id]);
     LearningMaterial::factory()->count(3)->create(['teacher_id' => $otherTeacher->id]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/materials');
+    $response = $this->actingAs($teacher)->get('/manage/materials');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -49,7 +49,7 @@ test('teachers can view create material form', function () {
         'teacher_id' => $teacher->id,
     ]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/materials/create');
+    $response = $this->actingAs($teacher)->get('/manage/materials/create');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -66,7 +66,7 @@ test('teachers can create a material', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
     $subject = Subject::factory()->create();
 
-    $response = $this->actingAs($teacher)->post('/teacher/materials', [
+    $response = $this->actingAs($teacher)->post('/manage/materials', [
         'subject_id' => $subject->id,
         'title' => 'Test Material',
         'description' => 'Test description',
@@ -76,7 +76,7 @@ test('teachers can create a material', function () {
         'is_active' => true,
     ]);
 
-    $response->assertRedirect('/teacher/materials');
+    $response->assertRedirect('/manage/materials');
     $this->assertDatabaseHas('learning_materials', [
         'title' => 'Test Material',
         'teacher_id' => $teacher->id,
@@ -90,7 +90,7 @@ test('teachers can create a material with file upload', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
     $subject = Subject::factory()->create();
 
-    $response = $this->actingAs($teacher)->post('/teacher/materials', [
+    $response = $this->actingAs($teacher)->post('/manage/materials', [
         'subject_id' => $subject->id,
         'title' => 'Test Material with File',
         'type' => 'document',
@@ -100,7 +100,7 @@ test('teachers can create a material with file upload', function () {
         'is_active' => true,
     ]);
 
-    $response->assertRedirect('/teacher/materials');
+    $response->assertRedirect('/manage/materials');
     $this->assertDatabaseHas('learning_materials', [
         'title' => 'Test Material with File',
     ]);
@@ -113,7 +113,7 @@ test('teachers can view their own material', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
     $material = LearningMaterial::factory()->create(['teacher_id' => $teacher->id]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/materials/'.$material->id);
+    $response = $this->actingAs($teacher)->get('/manage/materials/'.$material->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -129,7 +129,7 @@ test('teachers cannot view other teachers materials', function () {
     $otherTeacher = User::factory()->create(['role' => 'teacher']);
     $material = LearningMaterial::factory()->create(['teacher_id' => $otherTeacher->id]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/materials/'.$material->id);
+    $response = $this->actingAs($teacher)->get('/manage/materials/'.$material->id);
 
     $response->assertForbidden();
 });
@@ -138,7 +138,7 @@ test('teachers can view edit form for their own material', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
     $material = LearningMaterial::factory()->create(['teacher_id' => $teacher->id]);
 
-    $response = $this->actingAs($teacher)->get('/teacher/materials/'.$material->id.'/edit');
+    $response = $this->actingAs($teacher)->get('/manage/materials/'.$material->id.'/edit');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -157,7 +157,7 @@ test('teachers can update their own material', function () {
         'title' => 'Original Title',
     ]);
 
-    $response = $this->actingAs($teacher)->put('/teacher/materials/'.$material->id, [
+    $response = $this->actingAs($teacher)->put('/manage/materials/'.$material->id, [
         'subject_id' => $subject->id,
         'title' => 'Updated Title',
         'type' => 'video',
@@ -166,7 +166,7 @@ test('teachers can update their own material', function () {
         'is_active' => true,
     ]);
 
-    $response->assertRedirect('/teacher/materials');
+    $response->assertRedirect('/manage/materials');
     $this->assertDatabaseHas('learning_materials', [
         'id' => $material->id,
         'title' => 'Updated Title',
@@ -178,7 +178,7 @@ test('teachers cannot update other teachers materials', function () {
     $otherTeacher = User::factory()->create(['role' => 'teacher']);
     $material = LearningMaterial::factory()->create(['teacher_id' => $otherTeacher->id]);
 
-    $response = $this->actingAs($teacher)->put('/teacher/materials/'.$material->id, [
+    $response = $this->actingAs($teacher)->put('/manage/materials/'.$material->id, [
         'subject_id' => $material->subject_id,
         'title' => 'Updated Title',
         'type' => 'video',
@@ -193,9 +193,9 @@ test('teachers can delete their own material', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
     $material = LearningMaterial::factory()->create(['teacher_id' => $teacher->id]);
 
-    $response = $this->actingAs($teacher)->delete('/teacher/materials/'.$material->id);
+    $response = $this->actingAs($teacher)->delete('/manage/materials/'.$material->id);
 
-    $response->assertRedirect('/teacher/materials');
+    $response->assertRedirect('/manage/materials');
     $this->assertDatabaseMissing('learning_materials', [
         'id' => $material->id,
     ]);
@@ -206,7 +206,7 @@ test('teachers cannot delete other teachers materials', function () {
     $otherTeacher = User::factory()->create(['role' => 'teacher']);
     $material = LearningMaterial::factory()->create(['teacher_id' => $otherTeacher->id]);
 
-    $response = $this->actingAs($teacher)->delete('/teacher/materials/'.$material->id);
+    $response = $this->actingAs($teacher)->delete('/manage/materials/'.$material->id);
 
     $response->assertForbidden();
 });
@@ -218,7 +218,7 @@ test('teachers can toggle material active status', function () {
         'is_active' => true,
     ]);
 
-    $response = $this->actingAs($teacher)->patch('/teacher/materials/'.$material->id.'/toggle-active');
+    $response = $this->actingAs($teacher)->patch('/manage/materials/'.$material->id.'/toggle-active');
 
     $response->assertRedirect();
     $this->assertDatabaseHas('learning_materials', [
@@ -228,7 +228,7 @@ test('teachers can toggle material active status', function () {
 });
 
 test('guests cannot access teacher materials', function () {
-    $response = $this->get('/teacher/materials');
+    $response = $this->get('/manage/materials');
 
     $response->assertRedirect('/login');
 });
@@ -236,7 +236,7 @@ test('guests cannot access teacher materials', function () {
 test('students cannot access teacher materials', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/teacher/materials');
+    $response = $this->actingAs($student)->get('/manage/materials');
 
     $response->assertForbidden();
 });
@@ -244,7 +244,7 @@ test('students cannot access teacher materials', function () {
 test('material creation requires valid data', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->post('/teacher/materials', [
+    $response = $this->actingAs($teacher)->post('/manage/materials', [
         'title' => '', // Required field empty
         'type' => 'invalid_type', // Invalid type
     ]);

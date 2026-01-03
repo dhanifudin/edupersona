@@ -5,7 +5,7 @@ use App\Models\Subject;
 use App\Models\User;
 
 test('guests are redirected to login from subjects page', function () {
-    $response = $this->get('/student/subjects');
+    $response = $this->get('/subjects');
 
     $response->assertRedirect('/login');
 });
@@ -13,7 +13,7 @@ test('guests are redirected to login from subjects page', function () {
 test('non-students cannot access subjects page', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->get('/student/subjects');
+    $response = $this->actingAs($teacher)->get('/subjects');
 
     $response->assertForbidden();
 });
@@ -29,7 +29,7 @@ test('students can view enrolled subjects', function () {
         'status' => 'active',
     ]);
 
-    $response = $this->actingAs($student)->get('/student/subjects');
+    $response = $this->actingAs($student)->get('/subjects');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -42,7 +42,7 @@ test('students can view available elective subjects', function () {
     $student = User::factory()->create(['role' => 'student']);
     Subject::factory()->count(3)->create(['is_active' => true]);
 
-    $response = $this->actingAs($student)->get('/student/subjects/available');
+    $response = $this->actingAs($student)->get('/subjects/available');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -55,7 +55,7 @@ test('students can enroll in elective subject', function () {
     $student = User::factory()->create(['role' => 'student']);
     $subject = Subject::factory()->create(['is_active' => true]);
 
-    $response = $this->actingAs($student)->post("/student/subjects/{$subject->id}/enroll");
+    $response = $this->actingAs($student)->post("/subjects/{$subject->id}/enroll");
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
@@ -78,7 +78,7 @@ test('students cannot enroll in already enrolled subject', function () {
         'status' => 'active',
     ]);
 
-    $response = $this->actingAs($student)->post("/student/subjects/{$subject->id}/enroll");
+    $response = $this->actingAs($student)->post("/subjects/{$subject->id}/enroll");
 
     $response->assertRedirect();
     $response->assertSessionHas('error');
@@ -94,7 +94,7 @@ test('students can re-enroll in dropped subject', function () {
         'status' => 'dropped',
     ]);
 
-    $response = $this->actingAs($student)->post("/student/subjects/{$subject->id}/enroll");
+    $response = $this->actingAs($student)->post("/subjects/{$subject->id}/enroll");
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
@@ -117,7 +117,7 @@ test('students can unenroll from elective subject', function () {
         'status' => 'active',
     ]);
 
-    $response = $this->actingAs($student)->delete("/student/subjects/{$subject->id}/unenroll");
+    $response = $this->actingAs($student)->delete("/subjects/{$subject->id}/unenroll");
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
@@ -140,7 +140,7 @@ test('students cannot unenroll from assigned subject', function () {
         'status' => 'active',
     ]);
 
-    $response = $this->actingAs($student)->delete("/student/subjects/{$subject->id}/unenroll");
+    $response = $this->actingAs($student)->delete("/subjects/{$subject->id}/unenroll");
 
     $response->assertRedirect();
     $response->assertSessionHas('error');
@@ -156,7 +156,7 @@ test('students cannot unenroll from subject they are not enrolled in', function 
     $student = User::factory()->create(['role' => 'student']);
     $subject = Subject::factory()->create(['is_active' => true]);
 
-    $response = $this->actingAs($student)->delete("/student/subjects/{$subject->id}/unenroll");
+    $response = $this->actingAs($student)->delete("/subjects/{$subject->id}/unenroll");
 
     $response->assertRedirect();
     $response->assertSessionHas('error');

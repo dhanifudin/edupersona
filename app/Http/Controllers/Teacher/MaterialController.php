@@ -90,7 +90,7 @@ class MaterialController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        return redirect()->route('teacher.materials.index')
+        return redirect()->route('manage.materials.index')
             ->with('success', 'Materi berhasil ditambahkan!');
     }
 
@@ -185,7 +185,7 @@ class MaterialController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        return redirect()->route('teacher.materials.index')
+        return redirect()->route('manage.materials.index')
             ->with('success', 'Materi berhasil diperbarui!');
     }
 
@@ -199,7 +199,7 @@ class MaterialController extends Controller
 
         $material->delete();
 
-        return redirect()->route('teacher.materials.index')
+        return redirect()->route('manage.materials.index')
             ->with('success', 'Materi berhasil dihapus!');
     }
 

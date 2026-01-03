@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Services\RecommendationEngine;
 
 test('guests are redirected to login from recommendations page', function () {
-    $response = $this->get('/student/recommendations');
+    $response = $this->get('/recommendations');
 
     $response->assertRedirect('/login');
 });
@@ -16,7 +16,7 @@ test('guests are redirected to login from recommendations page', function () {
 test('non-students cannot access recommendations page', function () {
     $teacher = User::factory()->create(['role' => 'teacher']);
 
-    $response = $this->actingAs($teacher)->get('/student/recommendations');
+    $response = $this->actingAs($teacher)->get('/recommendations');
 
     $response->assertForbidden();
 });
@@ -24,7 +24,7 @@ test('non-students cannot access recommendations page', function () {
 test('students can access recommendations page', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/recommendations');
+    $response = $this->actingAs($student)->get('/recommendations');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -40,7 +40,7 @@ test('students can access recommendations page', function () {
 test('recommendations page shows hasLearningProfile false when no profile exists', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/recommendations');
+    $response = $this->actingAs($student)->get('/recommendations');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -59,7 +59,7 @@ test('recommendations page shows hasLearningProfile true when profile exists', f
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($student)->get('/student/recommendations');
+    $response = $this->actingAs($student)->get('/recommendations');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -72,7 +72,7 @@ test('students can see their unviewed recommendations', function () {
     $student = User::factory()->create(['role' => 'student']);
     AiRecommendation::factory()->count(3)->create(['user_id' => $student->id]);
 
-    $response = $this->actingAs($student)->get('/student/recommendations');
+    $response = $this->actingAs($student)->get('/recommendations');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -85,7 +85,7 @@ test('viewed recommendations are excluded from main list', function () {
     AiRecommendation::factory()->count(2)->create(['user_id' => $student->id]);
     AiRecommendation::factory()->viewed()->count(3)->create(['user_id' => $student->id]);
 
-    $response = $this->actingAs($student)->get('/student/recommendations');
+    $response = $this->actingAs($student)->get('/recommendations');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -110,7 +110,7 @@ test('students can filter recommendations by subject', function () {
         'material_id' => $material2->id,
     ]);
 
-    $response = $this->actingAs($student)->get('/student/recommendations?subject='.$subject1->id);
+    $response = $this->actingAs($student)->get('/recommendations?subject='.$subject1->id);
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -132,7 +132,7 @@ test('students can filter recommendations by material type', function () {
         'material_id' => $materialDoc->id,
     ]);
 
-    $response = $this->actingAs($student)->get('/student/recommendations?type=video');
+    $response = $this->actingAs($student)->get('/recommendations?type=video');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -154,7 +154,7 @@ test('students can filter recommendations by learning style', function () {
         'material_id' => $materialAuditory->id,
     ]);
 
-    $response = $this->actingAs($student)->get('/student/recommendations?style=visual');
+    $response = $this->actingAs($student)->get('/recommendations?style=visual');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -166,7 +166,7 @@ test('students can mark recommendation as viewed', function () {
     $student = User::factory()->create(['role' => 'student']);
     $recommendation = AiRecommendation::factory()->create(['user_id' => $student->id]);
 
-    $response = $this->actingAs($student)->post('/student/recommendations/'.$recommendation->id.'/view');
+    $response = $this->actingAs($student)->post('/recommendations/'.$recommendation->id.'/view');
 
     $response->assertRedirect();
     $recommendation->refresh();
@@ -179,7 +179,7 @@ test('students cannot mark other students recommendations as viewed', function (
     $student2 = User::factory()->create(['role' => 'student']);
     $recommendation = AiRecommendation::factory()->create(['user_id' => $student2->id]);
 
-    $response = $this->actingAs($student1)->post('/student/recommendations/'.$recommendation->id.'/view');
+    $response = $this->actingAs($student1)->post('/recommendations/'.$recommendation->id.'/view');
 
     $response->assertForbidden();
 });
@@ -195,7 +195,7 @@ test('students can refresh recommendations when they have a learning profile', f
         'analyzed_at' => now(),
     ]);
 
-    $response = $this->actingAs($student)->post('/student/recommendations/refresh');
+    $response = $this->actingAs($student)->post('/recommendations/refresh');
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
@@ -204,7 +204,7 @@ test('students can refresh recommendations when they have a learning profile', f
 test('students cannot refresh recommendations without learning profile', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->post('/student/recommendations/refresh');
+    $response = $this->actingAs($student)->post('/recommendations/refresh');
 
     $response->assertRedirect();
     $response->assertSessionHas('error');
@@ -226,7 +226,7 @@ test('students can generate recommendations when they have a learning profile', 
         $mock->shouldReceive('generateForStudent')->andReturn(collect());
     });
 
-    $response = $this->actingAs($student)->post('/student/recommendations/generate');
+    $response = $this->actingAs($student)->post('/recommendations/generate');
 
     $response->assertRedirect();
 });
@@ -234,7 +234,7 @@ test('students can generate recommendations when they have a learning profile', 
 test('students cannot generate recommendations without learning profile', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->post('/student/recommendations/generate');
+    $response = $this->actingAs($student)->post('/recommendations/generate');
 
     $response->assertRedirect();
     $response->assertSessionHas('error');
@@ -252,7 +252,7 @@ test('recommendations are ordered by relevance score descending', function () {
         'relevance_score' => 0.95,
     ]);
 
-    $response = $this->actingAs($student)->get('/student/recommendations');
+    $response = $this->actingAs($student)->get('/recommendations');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -266,7 +266,7 @@ test('recommendations are paginated', function () {
     $student = User::factory()->create(['role' => 'student']);
     AiRecommendation::factory()->count(15)->create(['user_id' => $student->id]);
 
-    $response = $this->actingAs($student)->get('/student/recommendations');
+    $response = $this->actingAs($student)->get('/recommendations');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -281,7 +281,7 @@ test('student cannot see other students recommendations', function () {
 
     AiRecommendation::factory()->count(5)->create(['user_id' => $student2->id]);
 
-    $response = $this->actingAs($student1)->get('/student/recommendations');
+    $response = $this->actingAs($student1)->get('/recommendations');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -293,7 +293,7 @@ test('viewed recommendations history is limited to 10', function () {
     $student = User::factory()->create(['role' => 'student']);
     AiRecommendation::factory()->viewed()->count(15)->create(['user_id' => $student->id]);
 
-    $response = $this->actingAs($student)->get('/student/recommendations');
+    $response = $this->actingAs($student)->get('/recommendations');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
@@ -304,7 +304,7 @@ test('viewed recommendations history is limited to 10', function () {
 test('filters are preserved in query string', function () {
     $student = User::factory()->create(['role' => 'student']);
 
-    $response = $this->actingAs($student)->get('/student/recommendations?subject=1&type=video&style=visual');
+    $response = $this->actingAs($student)->get('/recommendations?subject=1&type=video&style=visual');
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
