@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\AiFeedback;
+use App\Models\AiRecommendation;
 use App\Models\ClassRoom;
 use App\Models\LearningMaterial;
+use App\Models\LearningStyleProfile;
 use App\Models\StudentProgress;
 use App\Models\StudentSubjectEnrollment;
 use App\Models\Subject;
@@ -57,6 +60,63 @@ test('students can access learning page for enrolled subject', function () {
         ->has('subject')
         ->has('enrollment')
         ->has('topics')
+    );
+});
+
+test('learning page includes learning profile recommendations and feedback', function () {
+    $student = User::factory()->create(['role' => 'student']);
+    $subject = Subject::factory()->create();
+
+    // Create learning style profile
+    LearningStyleProfile::factory()->create([
+        'user_id' => $student->id,
+        'dominant_style' => 'visual',
+        'visual_score' => 85,
+        'auditory_score' => 45,
+        'kinesthetic_score' => 35,
+    ]);
+
+    StudentSubjectEnrollment::factory()->create([
+        'user_id' => $student->id,
+        'subject_id' => $subject->id,
+        'status' => 'active',
+    ]);
+
+    // Create learning materials
+    $material = LearningMaterial::factory()->create([
+        'subject_id' => $subject->id,
+        'topic' => 'Topic 1',
+        'learning_style' => 'visual',
+        'is_active' => true,
+    ]);
+
+    // Create AI recommendation
+    AiRecommendation::factory()->create([
+        'user_id' => $student->id,
+        'material_id' => $material->id,
+        'is_viewed' => false,
+        'relevance_score' => 0.95,
+    ]);
+
+    // Create AI feedback
+    AiFeedback::factory()->create([
+        'user_id' => $student->id,
+        'is_read' => false,
+        'feedback_text' => 'Great progress!',
+    ]);
+
+    $response = $this->actingAs($student)->get("/subjects/{$subject->id}/learn");
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('student/SubjectLearning')
+        ->has('subject')
+        ->has('enrollment')
+        ->has('topics', 1)
+        ->has('learningProfile')
+        ->where('learningProfile.dominant_style', 'visual')
+        ->has('recommendations', 1)
+        ->has('aiFeedback')
     );
 });
 

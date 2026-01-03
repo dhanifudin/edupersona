@@ -48,7 +48,7 @@ const getStatusClass = (status: string) => {
             class="relative"
         >
             <Link
-                :href="topicRoute.url(subjectId, topic.name)"
+                :href="topicRoute.url({ subject: subjectId, topic: topic.name })"
                 class="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
                 :class="{
                     'bg-muted': currentTopic === topic.name,

@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LearningStyleProfile extends Model
 {
+    /** @use HasFactory<\Database\Factories\LearningStyleProfileFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'visual_score',

@@ -49,13 +49,22 @@ export interface ClassRoom {
     academic_year: string;
 }
 
+export interface Subject {
+    id: number;
+    name: string;
+    code: string;
+    description?: string | null;
+    category?: string | null;
+    is_active: boolean;
+}
+
 export interface LearningStyleProfile {
     id: number;
     user_id: number;
     visual_score: number;
     auditory_score: number;
     kinesthetic_score: number;
-    dominant_style: 'visual' | 'auditory' | 'kinesthetic';
+    dominant_style: 'visual' | 'auditory' | 'kinesthetic' | 'mixed';
     analyzed_at: string;
 }
 
@@ -97,6 +106,7 @@ export interface LearningMaterial {
     id: number;
     title: string;
     description?: string;
+    topic?: string;
     type: 'video' | 'document' | 'infographic' | 'audio' | 'simulation';
     learning_style: 'visual' | 'auditory' | 'kinesthetic' | 'all';
     difficulty_level: 'beginner' | 'intermediate' | 'advanced';

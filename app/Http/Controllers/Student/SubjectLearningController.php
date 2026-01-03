@@ -29,11 +29,32 @@ class SubjectLearningController extends Controller
         $topics = $this->getTopicsWithProgress($user, $subject);
         $currentTopic = $this->getCurrentTopic($user, $subject, $topics);
 
+        // Get learning style profile
+        $learningProfile = $user->learningStyleProfile;
+
+        // Get top AI recommendations for this subject
+        $recommendations = $user->aiRecommendations()
+            ->with('material:id,title,type,learning_style,description,topic')
+            ->whereHas('material', fn ($q) => $q->where('subject_id', $subject->id))
+            ->unviewed()
+            ->orderByDesc('relevance_score')
+            ->limit(5)
+            ->get();
+
+        // Get latest AI feedback
+        $aiFeedback = $user->aiFeedback()
+            ->where('is_read', false)
+            ->orderByDesc('generated_at')
+            ->first();
+
         return Inertia::render('student/SubjectLearning', [
             'subject' => $subject,
             'enrollment' => $enrollment,
             'topics' => $topics,
             'currentTopic' => $currentTopic,
+            'learningProfile' => $learningProfile,
+            'recommendations' => $recommendations,
+            'aiFeedback' => $aiFeedback,
         ]);
     }
 
