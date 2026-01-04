@@ -15,9 +15,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/student/dashboard' },
-    { title: 'Umpan Balik AI', href: '/student/feedback' },
-    { title: 'Detail', href: `/student/feedback/${props.feedback.id}` },
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Umpan Balik AI', href: '/feedback' },
+    { title: 'Detail', href: `/feedback/${props.feedback.id}` },
 ];
 
 const formatDate = (dateString: string): string => {

@@ -40,8 +40,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/student/dashboard' },
-    { title: 'Materi', href: '/student/materials' },
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Materi', href: '/materials' },
 ];
 
 const isRefreshing = ref(false);

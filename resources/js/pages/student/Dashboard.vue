@@ -59,7 +59,7 @@ const showEnrollmentModal = ref(false);
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard Siswa',
-        href: '/student/dashboard',
+        href: '/dashboard',
     },
 ];
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateFeedbackJob;
 use App\Models\LearningMaterial;
 use App\Models\StudentProgress;
 use App\Models\Subject;
@@ -149,7 +150,15 @@ class SubjectLearningController extends Controller
             ->where('topic', $topic)
             ->first();
 
-        if ($progress) {
+        if ($progress && $progress->status !== 'completed') {
+            $progress->update([
+                'status' => 'completed',
+                'last_activity_at' => now(),
+            ]);
+
+            // Generate feedback for topic completion
+            GenerateFeedbackJob::dispatch($user, 'topic_completion');
+        } elseif ($progress) {
             $progress->update([
                 'status' => 'completed',
                 'last_activity_at' => now(),

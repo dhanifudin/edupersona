@@ -57,13 +57,19 @@ Route::middleware(['auth', 'verified', 'role:student'])->group(function () {
     Route::patch('/activities/{activity}', [MaterialController::class, 'updateActivity'])->name('activities.update');
 
     Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
-    Route::post('/recommendations/refresh', [RecommendationController::class, 'refresh'])->name('recommendations.refresh');
-    Route::post('/recommendations/generate', [RecommendationController::class, 'generate'])->name('recommendations.generate');
+    Route::post('/recommendations/refresh', [RecommendationController::class, 'refresh'])
+        ->middleware('throttle:ai-generation')
+        ->name('recommendations.refresh');
+    Route::post('/recommendations/generate', [RecommendationController::class, 'generate'])
+        ->middleware('throttle:ai-generation')
+        ->name('recommendations.generate');
     Route::post('/recommendations/{recommendation}/view', [RecommendationController::class, 'markViewed'])->name('recommendations.view');
 
     Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
     Route::get('/feedback/{feedback}', [FeedbackController::class, 'show'])->name('feedback.show');
-    Route::post('/feedback/generate', [FeedbackController::class, 'generate'])->name('feedback.generate');
+    Route::post('/feedback/generate', [FeedbackController::class, 'generate'])
+        ->middleware('throttle:ai-generation')
+        ->name('feedback.generate');
 
     Route::get('/progress', [ProgressController::class, 'index'])->name('progress.index');
 

@@ -25,8 +25,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/student/dashboard' },
-    { title: 'Umpan Balik AI', href: '/student/feedback' },
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Umpan Balik AI', href: '/feedback' },
 ];
 
 const isGenerating = ref(false);

@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { type BreadcrumbItem, type Subject, type LearningMaterial, type LearningStyleProfile, type AiRecommendation } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { index as dashboardIndex } from '@/actions/App/Http/Controllers/Student/DashboardController';
-import { show as learnShow, completeTopic } from '@/actions/App/Http/Controllers/Student/SubjectLearningController';
+import { show as learnShow } from '@/actions/App/Http/Controllers/Student/SubjectLearningController';
 import { show as materialShow } from '@/actions/App/Http/Controllers/Student/MaterialController';
-import { ArrowLeft, BookOpen, CheckCircle2, FileText, Headphones, Image, Play, Sparkles, Video } from 'lucide-vue-next';
+import { ArrowLeft, BookOpen, FileText, Headphones, Image, Play, Sparkles, Video } from 'lucide-vue-next';
 
 interface Progress {
     id: number;
@@ -92,9 +92,6 @@ const getLearningStyleColor = (style: string): string => {
     return colors[style] || 'bg-gray-500';
 };
 
-const handleCompleteTopic = () => {
-    router.post(completeTopic.url(props.subject.id, props.topic));
-};
 </script>
 
 <template>
@@ -115,15 +112,17 @@ const handleCompleteTopic = () => {
                         <h1 class="text-2xl font-bold">{{ topic }}</h1>
                     </div>
                 </div>
-                <div v-if="progress?.status === 'in_progress'" class="flex items-center gap-2">
-                    <Button @click="handleCompleteTopic">
-                        <CheckCircle2 class="mr-2 h-4 w-4" />
-                        Tandai Selesai
-                    </Button>
+                <div class="flex items-center gap-2">
+                    <Badge v-if="!progress || progress.status === 'not_started'" variant="secondary">
+                        Belum Dimulai
+                    </Badge>
+                    <Badge v-else-if="progress.status === 'in_progress'" class="bg-blue-500">
+                        Sedang Belajar
+                    </Badge>
+                    <Badge v-else-if="progress.status === 'completed'" class="bg-green-500">
+                        Selesai
+                    </Badge>
                 </div>
-                <Badge v-else-if="progress?.status === 'completed'" class="bg-green-500">
-                    Selesai
-                </Badge>
             </div>
 
             <!-- Main Content Grid -->

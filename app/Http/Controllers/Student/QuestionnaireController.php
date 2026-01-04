@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreQuestionnaireRequest;
+use App\Jobs\GenerateFeedbackJob;
+use App\Jobs\GenerateRecommendationsJob;
 use App\Models\LearningStyleQuestion;
 use App\Models\LearningStyleResponse;
 use App\Services\LearningStyleAnalyzer;
@@ -64,6 +66,10 @@ class QuestionnaireController extends Controller
             // Analyze and create profile
             $this->analyzer->analyze($user);
         });
+
+        // Generate initial AI recommendations and welcome feedback (async)
+        GenerateRecommendationsJob::dispatch($user);
+        GenerateFeedbackJob::dispatch($user, 'welcome');
 
         return redirect()->route('learning-profile.show')
             ->with('success', 'Kuesioner berhasil disimpan! Lihat profil gaya belajarmu.');

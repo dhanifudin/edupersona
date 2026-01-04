@@ -26,11 +26,11 @@ const user = page.props.auth.user;
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/student/dashboard',
+        href: '/dashboard',
     },
     {
         title: 'Profil',
-        href: '/student/profile',
+        href: '/profile',
     },
 ];
 

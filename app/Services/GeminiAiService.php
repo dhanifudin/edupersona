@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Gemini\Data\Content;
-use Gemini\Enums\Role;
 use Gemini\Laravel\Facades\Gemini;
 use Illuminate\Support\Facades\Log;
 
@@ -32,7 +31,7 @@ class GeminiAiService
 
             if ($systemInstruction) {
                 $model = $model->withSystemInstruction(
-                    Content::createTextContent($systemInstruction, Role::MODEL)
+                    Content::parse($systemInstruction)
                 );
             }
 

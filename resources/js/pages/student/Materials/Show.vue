@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { type BreadcrumbItem, type LearningMaterial, type LearningActivity } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { index as materialsIndex, show as materialShow } from '@/actions/App/Http/Controllers/Student/MaterialController';
-import { BookOpen, Video, FileText, Image, Headphones, Gamepad2, ExternalLink, Clock, User, ArrowLeft, Check } from 'lucide-vue-next';
+import { topic as topicRoute } from '@/actions/App/Http/Controllers/Student/SubjectLearningController';
+import { BookOpen, Video, FileText, Image, Headphones, Gamepad2, ExternalLink, Clock, User, ArrowLeft, Check, ArrowRight, CheckCircle2 } from 'lucide-vue-next';
 import { ref, onMounted, onUnmounted } from 'vue';
 
 interface MaterialWithRelations extends LearningMaterial {
@@ -14,18 +22,37 @@ interface MaterialWithRelations extends LearningMaterial {
     teacher?: { id: number; name: string };
 }
 
+interface OtherMaterial {
+    id: number;
+    title: string;
+    type: string;
+    learning_style: string;
+    difficulty_level: string;
+}
+
+interface TopicNavigation {
+    subjectId: number;
+    subjectName?: string;
+    currentTopic: string;
+    nextTopic: string | null;
+    otherStyleMaterials: OtherMaterial[];
+}
+
 interface Props {
     material: MaterialWithRelations;
     activity: LearningActivity;
     relatedMaterials: LearningMaterial[];
+    topicNavigation?: TopicNavigation;
 }
 
 const props = defineProps<Props>();
 
+const showCompletionDialog = ref(false);
+
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/student/dashboard' },
-    { title: 'Materi', href: '/student/materials' },
-    { title: props.material.title, href: `/student/materials/${props.material.id}` },
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Materi', href: '/materials' },
+    { title: props.material.title, href: `/materials/${props.material.id}` },
 ];
 
 // Activity tracking
@@ -82,25 +109,72 @@ const formatDuration = (seconds: number): string => {
 
 const updateActivity = async () => {
     try {
-        await fetch(`/student/activities/${props.activity.id}`, {
+        const response = await fetch(`/activities/${props.activity.id}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content || '',
+                'X-Requested-With': 'XMLHttpRequest',
             },
             body: JSON.stringify({
                 duration_seconds: elapsedSeconds.value,
                 completed: isCompleted.value,
             }),
         });
+
+        if (!response.ok) {
+            console.error('Failed to update activity:', response.status, await response.text());
+        }
     } catch (error) {
         console.error('Failed to update activity', error);
     }
 };
 
 const markAsCompleted = async () => {
+    // Stop the timer
+    if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+    }
+
     isCompleted.value = true;
     await updateActivity();
+
+    // Show completion dialog
+    showCompletionDialog.value = true;
+};
+
+const goToNextTopic = () => {
+    if (props.topicNavigation?.nextTopic) {
+        router.visit(topicRoute.url({
+            subject: props.topicNavigation.subjectId,
+            topic: props.topicNavigation.nextTopic
+        }));
+    }
+};
+
+const goToCurrentTopic = () => {
+    if (props.topicNavigation) {
+        router.visit(topicRoute.url({
+            subject: props.topicNavigation.subjectId,
+            topic: props.topicNavigation.currentTopic
+        }));
+    }
+};
+
+const goToOtherMaterial = (materialId: number) => {
+    router.visit(materialShow(materialId).url);
+};
+
+const getStyleColor = (style: string): string => {
+    const colors: Record<string, string> = {
+        visual: 'bg-blue-500',
+        auditory: 'bg-purple-500',
+        kinesthetic: 'bg-orange-500',
+        all: 'bg-gray-500',
+    };
+    return colors[style] || 'bg-gray-500';
 };
 
 onMounted(() => {
@@ -248,6 +322,23 @@ onUnmounted(() => {
 
                 <!-- Sidebar -->
                 <div class="space-y-6">
+                    <!-- Current Topic Info -->
+                    <Card v-if="topicNavigation">
+                        <CardHeader class="pb-3">
+                            <CardTitle class="text-lg">Topik Saat Ini</CardTitle>
+                            <CardDescription>{{ topicNavigation.currentTopic }}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p class="text-sm text-muted-foreground">
+                                Selesaikan materi ini untuk menandai topik sebagai selesai.
+                            </p>
+                            <div v-if="topicNavigation.nextTopic" class="mt-3 p-2 bg-muted/50 rounded-md">
+                                <p class="text-xs text-muted-foreground">Topik selanjutnya:</p>
+                                <p class="text-sm font-medium">{{ topicNavigation.nextTopic }}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <!-- Activity Tracking -->
                     <Card>
                         <CardHeader>
@@ -276,8 +367,8 @@ onUnmounted(() => {
                                     Tandai Selesai
                                 </Button>
                                 <div v-else class="flex items-center justify-center gap-2 text-green-600">
-                                    <Check class="h-5 w-5" />
-                                    <span class="font-medium">Selesai</span>
+                                    <CheckCircle2 class="h-5 w-5" />
+                                    <span class="font-medium">Topik Selesai!</span>
                                 </div>
                             </div>
                         </CardContent>
@@ -325,5 +416,73 @@ onUnmounted(() => {
                 </div>
             </div>
         </div>
+
+        <!-- Completion Dialog -->
+        <Dialog v-model:open="showCompletionDialog">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2">
+                        <CheckCircle2 class="h-5 w-5 text-green-500" />
+                        Selamat! Topik Selesai
+                    </DialogTitle>
+                    <DialogDescription>
+                        Kamu telah menyelesaikan topik <strong>{{ topicNavigation?.currentTopic }}</strong>.
+                        Apa yang ingin kamu lakukan selanjutnya?
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div class="space-y-3 py-4">
+                    <!-- Option 1: Go to next topic -->
+                    <Button
+                        v-if="topicNavigation?.nextTopic"
+                        class="w-full justify-start h-auto py-3"
+                        @click="goToNextTopic"
+                    >
+                        <ArrowRight class="mr-3 h-5 w-5" />
+                        <div class="text-left">
+                            <p class="font-medium">Lanjut ke Topik Berikutnya</p>
+                            <p class="text-xs text-primary-foreground/70">{{ topicNavigation.nextTopic }}</p>
+                        </div>
+                    </Button>
+
+                    <!-- Option 2: Learn with different style (if other materials exist) -->
+                    <div v-if="topicNavigation?.otherStyleMaterials?.length" class="space-y-2">
+                        <p class="text-sm text-muted-foreground">
+                            Atau pelajari topik ini dengan gaya belajar lain:
+                        </p>
+                        <div class="grid gap-2">
+                            <Button
+                                v-for="mat in topicNavigation.otherStyleMaterials"
+                                :key="mat.id"
+                                variant="outline"
+                                class="w-full justify-start h-auto py-3"
+                                @click="goToOtherMaterial(mat.id)"
+                            >
+                                <component :is="getTypeIcon(mat.type)" class="mr-3 h-5 w-5" />
+                                <div class="text-left flex-1 min-w-0">
+                                    <p class="font-medium truncate">{{ mat.title }}</p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <Badge :class="getStyleColor(mat.learning_style)" class="text-xs text-white">
+                                            {{ getStyleLabel(mat.learning_style) }}
+                                        </Badge>
+                                        <span class="text-xs text-muted-foreground">{{ getTypeLabel(mat.type) }}</span>
+                                    </div>
+                                </div>
+                            </Button>
+                        </div>
+                    </div>
+
+                    <!-- Option 3: Go back to current topic page -->
+                    <Button
+                        variant="ghost"
+                        class="w-full"
+                        @click="goToCurrentTopic"
+                    >
+                        <ArrowLeft class="mr-2 h-4 w-4" />
+                        Kembali ke Halaman Topik
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

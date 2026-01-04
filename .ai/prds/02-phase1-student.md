@@ -196,7 +196,7 @@ Dashboard untuk melihat progress dan aktivitas belajar siswa.
 
 | Method | Route | Controller | Description |
 |--------|-------|------------|-------------|
-| GET | /student/dashboard | DashboardController@index | Dashboard utama |
+| GET | /dashboard | DashboardController@index | Dashboard utama |
 
 ---
 

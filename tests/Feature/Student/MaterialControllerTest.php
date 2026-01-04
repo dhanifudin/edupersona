@@ -4,6 +4,7 @@ use App\Models\AiRecommendation;
 use App\Models\LearningActivity;
 use App\Models\LearningMaterial;
 use App\Models\LearningStyleProfile;
+use App\Models\StudentProgress;
 use App\Models\Subject;
 use App\Models\User;
 
@@ -177,6 +178,81 @@ test('students can mark learning activity as completed', function () {
     $response->assertOk();
     $activity->refresh();
     expect($activity->completed_at)->not->toBeNull();
+});
+
+test('completing activity marks topic progress as completed', function () {
+    $student = User::factory()->create(['role' => 'student']);
+    $subject = Subject::factory()->create();
+    $material = LearningMaterial::factory()->create([
+        'subject_id' => $subject->id,
+        'topic' => 'Test Topic',
+    ]);
+
+    // Create initial progress (in_progress)
+    StudentProgress::create([
+        'user_id' => $student->id,
+        'subject_id' => $subject->id,
+        'topic' => 'Test Topic',
+        'status' => 'in_progress',
+    ]);
+
+    $activity = LearningActivity::create([
+        'user_id' => $student->id,
+        'material_id' => $material->id,
+        'duration_seconds' => 0,
+        'started_at' => now(),
+    ]);
+
+    $response = $this->actingAs($student)
+        ->patchJson('/activities/'.$activity->id, [
+            'duration_seconds' => 300,
+            'completed' => true,
+        ]);
+
+    $response->assertOk();
+
+    // Verify topic progress is now completed
+    $progress = StudentProgress::where('user_id', $student->id)
+        ->where('subject_id', $subject->id)
+        ->where('topic', 'Test Topic')
+        ->first();
+
+    expect($progress->status)->toBe('completed');
+});
+
+test('completing activity creates topic progress if not exists', function () {
+    $student = User::factory()->create(['role' => 'student']);
+    $subject = Subject::factory()->create();
+    $material = LearningMaterial::factory()->create([
+        'subject_id' => $subject->id,
+        'topic' => 'New Topic',
+    ]);
+
+    // No initial progress exists
+
+    $activity = LearningActivity::create([
+        'user_id' => $student->id,
+        'material_id' => $material->id,
+        'duration_seconds' => 0,
+        'started_at' => now(),
+    ]);
+
+    $response = $this->actingAs($student)
+        ->patchJson('/activities/'.$activity->id, [
+            'duration_seconds' => 300,
+            'completed' => true,
+        ]);
+
+    $response->assertOk();
+
+    // Verify topic progress was created and is completed
+    $progress = StudentProgress::where('user_id', $student->id)
+        ->where('subject_id', $subject->id)
+        ->where('topic', 'New Topic')
+        ->first();
+
+    expect($progress)->not->toBeNull();
+    expect($progress->status)->toBe('completed');
 });
 
 test('guests cannot access materials', function () {

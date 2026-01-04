@@ -27,8 +27,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard Siswa', href: '/student/dashboard' },
-    { title: 'Rekomendasi', href: '/student/recommendations' },
+    { title: 'Dashboard Siswa', href: '/dashboard' },
+    { title: 'Rekomendasi', href: '/recommendations' },
 ];
 
 const selectedSubject = ref(props.filters.subject || '');

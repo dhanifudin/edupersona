@@ -32,7 +32,7 @@ interface Props {
 defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard Siswa', href: '/student/dashboard' },
+    { title: 'Dashboard Siswa', href: '/dashboard' },
     { title: 'Mata Pelajaran', href: '#' },
 ];
 </script>

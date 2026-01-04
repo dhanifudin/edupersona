@@ -61,8 +61,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard Siswa', href: '/student/dashboard' },
-    { title: 'Kemajuan Belajar', href: '/student/progress' },
+    { title: 'Dashboard Siswa', href: '/dashboard' },
+    { title: 'Kemajuan Belajar', href: '/progress' },
 ];
 
 const formatDuration = (minutes: number): string => {
